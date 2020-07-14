@@ -206,7 +206,6 @@ type
     Chk_CameraAxis: TMenuItem;
     CheckBox_ShowOPLNodes: TMenuItem;
     Chk_Reset: TMenuItem;
-    CameraObj: TEdit;
 
     //General
     procedure FormCreate(Sender: TObject);
@@ -995,7 +994,6 @@ begin
     Edit_YCoordinate.Text:=inttostr(CoordSys_Y);
     Edit_ZCoordinate.Text:=inttostr(CoordSys_Z); // +' '+inttostr(CurPos);
 
-    CameraObj.Text:=inttostr(round(GLDummyCube.Position.X))+' '+inttostr(round(GLDummyCube.Position.Y))+' '+inttostr(round(GLDummyCube.Position.Z));
   except
     GLSphere1.Visible:=False;
   end;
