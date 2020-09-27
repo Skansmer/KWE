@@ -206,6 +206,9 @@ type
     Chk_CameraAxis: TMenuItem;
     CheckBox_ShowOPLNodes: TMenuItem;
     Chk_Reset: TMenuItem;
+    N5: TMenuItem;
+    NewKSMFile1: TMenuItem;
+    DuplicateMap: TMenuItem;
 
     //General
     procedure FormCreate(Sender: TObject);
@@ -299,6 +302,7 @@ type
     procedure PopUp_CoordSys_CopyZClick(Sender: TObject);
     procedure PopupMenu_CoordSys_CopyXYZClick(Sender: TObject);
     procedure MainMenu_File_SaveKCMFileAsClick(Sender: TObject);
+    procedure MainMenu_MAP_HeaderInfoClick(Sender: TObject);
     procedure MainMenu_KCMFile_HeaderInfoClick(Sender: TObject);
     procedure MainMenu_OPLFile_HeaderInfoClick(Sender: TObject);
     procedure MainMenu_KCM_NewKCMFileClick(Sender: TObject);
@@ -346,6 +350,7 @@ type
     procedure Chk_ResetClick(Sender: TObject);
     // MODEL VIEWER END
     procedure Delay(Milliseconds: Integer);
+    procedure DuplicateMapClick(Sender: TObject);
 
   private
     Previous_KCM:Array[0..9] of TKCMHeightMap;
@@ -386,7 +391,7 @@ var
 
 implementation
 
-uses Unit2, Unit3, Unit4, Unit5, Unit6, Unit7, Unit8, Unit9, Unit10;
+uses Unit2, Unit3, Unit4, Unit5, Unit6, Unit7, Unit8, Unit9, Unit10, MapCoords;
 
 {$R *.dfm}
 
@@ -4512,19 +4517,28 @@ end;
 procedure TForm_Main.MainMenu_File_SaveKCMFileAsClick(Sender: TObject);
 var
   saveDialog:TSaveDialog;
+  oplPath:String;
 begin
   saveDialog:=TSaveDialog.Create(Form_Main);
   saveDialog.Title:='Save your KalClientMap';
   saveDialog.InitialDir:=KCMInital_Path;
   saveDialog.Filter := 'Kal Client Maps|*.kcm;';
-  saveDialog.DefaultExt := 'kcm';
-  saveDialog.FileName:='n_0'+IntToStr(KCM.Header.MapX)+'_0'+IntToStr(KCM.Header.MapY)+'.kcm';
+  saveDialog.DefaultExt := '';
+  saveDialog.FileName:='n_0'+IntToStr(KCM.Header.MapX)+'_0'+IntToStr(KCM.Header.MapY);
+
   If SaveDialog.Execute Then
   begin
-    KCM.SaveToFile(saveDialog.FileName);
-    MessageBox(handle,PChar('Succesfully saved KCM file to '''+KCM.FileLocation+''''),'Saving succeed',mb_ok);
+    KCM.SaveToFile(saveDialog.FileName+'.kcm');
+    OPL.SaveToFile(saveDialog.FileName+'.opl');
+    MessageBox(handle,PChar('Succesfully saved MAP file to '''+KCM.FileLocation+''''),'Saving succeed',mb_ok);
     KCM.Saved:=True;
+    OPL.Saved:=True;
   end;
+end;
+
+procedure TForm_Main.MainMenu_MAP_HeaderInfoClick(Sender: TObject);
+begin
+  Form_SetMapXY.SetMapXY;
 end;
 
 procedure TForm_Main.MainMenu_KCMFile_HeaderInfoClick(Sender: TObject);
@@ -5528,4 +5542,40 @@ begin
   until (stop-start)>=msec;
 end;
 }
+procedure TForm_Main.DuplicateMapClick(Sender: TObject);
+var
+Openfiledialog:TOpenDialog;
+filepath,x,y:String;
+KCMHeader:TKCMHeader;
+OPLHeader:TOPLHeader;
+begin
+  If (KCM<>nil) or (OPL<>nil) then
+  begin
+    If MessageBox(Handle, pchar('Duplicate Current Map?'),'Duplicate?',MB_YESNO) = IDYES then
+    begin
+      //Duplicate Current map
+      Form_MapXY.SetKCMMapXY;
+      //Form_MapXY.SetOPLMapXY;
+      filepath := ExtractFilePath(KCM.FileLocation);
+
+        KCMHeader:=TKCMHeader.Create;
+        KCMHeader:=KCM.Header;
+        OPLHeader:=TOPLHeader.Create;
+        OPLHeader:=OPL.Header;
+        x:=IntToStr(KCMHeader.MapX);
+        y:=IntToStr(KCMHeader.MapY);
+        KCM.SaveToFile(filepath+'n_0'+x+'_0'+y+'.kcm');
+        OPL.SaveToFile(filepath+'n_0'+x+'_0'+y+'.opl');
+    end
+    else
+    begin
+      //Browse to map and duplicate
+    end;
+  end
+  else
+  begin
+    //Browse to map and duplicate
+  end;
+end;
+
 end. // End of File
